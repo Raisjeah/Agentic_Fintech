@@ -1,13 +1,17 @@
 from fastapi import APIRouter
-from api.routes.analysis import analyses_db
 from typing import List, Dict, Any
+from core.db import db_client
 
 router = APIRouter()
 
 @router.get("/history", response_model=List[Dict[str, Any]])
 async def get_history():
-    # Return all analyses, sorted by newest first
-    items = list(analyses_db.values())
+    # Return all analyses from MongoDB, sorted by newest first
+    cursor = db_client.analyses.find()
+    items = []
+    async for doc in cursor:
+        doc.pop("_id", None)
+        items.append(doc)
     items.sort(key=lambda x: x.get("created_at", ""), reverse=True)
     return items
 
@@ -17,7 +21,8 @@ async def get_performance():
     wins = 0
     losses = 0
     
-    for analysis in analyses_db.values():
+    cursor = db_client.analyses.find()
+    async for analysis in cursor:
         if "outcome" in analysis:
             total_trades += 1
             if analysis["outcome"] == "WIN":

@@ -6,7 +6,7 @@ class RiskAgent:
     def __init__(self):
         self.llm = get_llm_client(provider=LLMProvider.GEMINI, task="fast")
         
-    def evaluate_risk(self, asset: str, ohlcv: list, macro_output: Dict[str, Any], news_output: Dict[str, Any]) -> Dict[str, Any]:
+    async def evaluate_risk(self, asset: str, ohlcv: list, macro_output: Dict[str, Any], news_output: Dict[str, Any]) -> Dict[str, Any]:
         """
         Evaluate event risk, volatility, and red flags.
         """
@@ -43,7 +43,8 @@ class RiskAgent:
         """
         
         try:
-            llm_res = self.llm.generate(prompt)
+            import asyncio
+            llm_res = await asyncio.to_thread(self.llm.generate, prompt)
             if llm_res.startswith("```json"):
                 llm_res = llm_res[7:-3]
             elif llm_res.startswith("```"):

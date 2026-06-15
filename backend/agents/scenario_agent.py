@@ -6,7 +6,7 @@ class ScenarioAgent:
     def __init__(self):
         self.llm = get_llm_client(provider=LLMProvider.GEMINI, task="fast")
         
-    def generate_scenarios(self, asset: str, current_price: float, synth_output: Dict[str, Any], tech_output: Dict[str, Any]) -> Dict[str, Any]:
+    async def generate_scenarios(self, asset: str, current_price: float, synth_output: Dict[str, Any], tech_output: Dict[str, Any]) -> Dict[str, Any]:
         """
         Create Bull, Base, and Bear scenarios.
         """
@@ -26,7 +26,8 @@ class ScenarioAgent:
         """
         
         try:
-            llm_res = self.llm.generate(prompt)
+            import asyncio
+            llm_res = await asyncio.to_thread(self.llm.generate, prompt)
             if llm_res.startswith("```json"):
                 llm_res = llm_res[7:-3]
             elif llm_res.startswith("```"):

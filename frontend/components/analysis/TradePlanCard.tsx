@@ -78,7 +78,7 @@ export default function TradePlanCard({ data, asset }: { data?: any, asset?: str
             <div className="space-y-1">
               {data.take_profit?.map((tp: any, idx: number) => (
                 <div key={idx} className="flex justify-between font-mono text-sm">
-                  <span className="text-[var(--cyan-primary)]">TP{idx+1} {tp}</span>
+                  <span className="text-[var(--cyan-primary)]">TP{idx+1}: {tp.price} ({tp.size_percent}%)</span>
                 </div>
               ))}
               <div className="text-[var(--text-muted)] font-mono text-sm">Overall RR: 1:{data.rr_ratio}</div>
@@ -88,30 +88,51 @@ export default function TradePlanCard({ data, asset }: { data?: any, asset?: str
       </div>
 
       {/* BAWAH - Scenarios */}
-      <div className="bg-[var(--bg-elevated)] p-4 grid grid-cols-3 gap-4">
-        <div className="bg-[var(--bg-surface)] border border-[var(--cyan-primary)]/30 rounded p-3">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-bold text-[var(--cyan-primary)]">🟢 BULL SCENARIO</span>
-            <span className="font-mono text-xs">45%</span>
-          </div>
-          <p className="text-xs text-[var(--text-secondary)]">{data.scenarios?.bull || "Menembus resistensi utama."}</p>
-        </div>
-        
-        <div className="bg-[var(--bg-surface)] border border-[var(--orange-warn)]/30 rounded p-3">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-bold text-[var(--orange-warn)]">🟡 BASE SCENARIO</span>
-            <span className="font-mono text-xs">35%</span>
-          </div>
-          <p className="text-xs text-[var(--text-secondary)]">{data.scenarios?.base || "Sideway di area konsolidasi."}</p>
-        </div>
-
-        <div className="bg-[var(--bg-surface)] border border-[var(--red-danger)]/30 rounded p-3">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-bold text-[var(--red-danger)]">🔴 BEAR SCENARIO</span>
-            <span className="font-mono text-xs">20%</span>
-          </div>
-          <p className="text-xs text-[var(--text-secondary)]">{data.scenarios?.bear || "Gagal bertahan di zona entry."}</p>
-        </div>
+      <div className="bg-[var(--bg-elevated)] p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+        {['bull', 'base', 'bear'].map((type) => {
+          const scenario = data.scenarios?.[type];
+          const isObj = typeof scenario === 'object' && scenario !== null;
+          
+          const borderColors: Record<string, string> = {
+            bull: 'border-[var(--cyan-primary)]/30',
+            base: 'border-[var(--orange-warn)]/30',
+            bear: 'border-[var(--red-danger)]/30'
+          };
+          const textColors: Record<string, string> = {
+            bull: 'text-[var(--cyan-primary)]',
+            base: 'text-[var(--orange-warn)]',
+            bear: 'text-[var(--red-danger)]'
+          };
+          const icons: Record<string, string> = { bull: '🟢', base: '🟡', bear: '🔴' };
+          const defaultTexts: Record<string, string> = {
+            bull: "Menembus resistensi utama.",
+            base: "Sideway di area konsolidasi.",
+            bear: "Gagal bertahan di zona entry."
+          };
+          
+          return (
+            <div key={type} className={`bg-[var(--bg-surface)] border ${borderColors[type]} rounded p-3`}>
+              <div className="flex justify-between items-center mb-2">
+                <span className={`text-sm font-bold ${textColors[type]}`}>
+                  {icons[type]} {type.toUpperCase()} SCENARIO
+                </span>
+                <span className="font-mono text-xs">{isObj && scenario.probability ? `${scenario.probability}%` : ''}</span>
+              </div>
+              <div className="text-xs text-[var(--text-secondary)] whitespace-pre-wrap">
+                {isObj ? (
+                  <div className="space-y-1">
+                    {scenario.trigger && <div><span className="opacity-70 font-bold">Trigger:</span> {scenario.trigger}</div>}
+                    {scenario.entry && <div><span className="opacity-70 font-bold">Entry:</span> {scenario.entry}</div>}
+                    {scenario.tp1 && <div><span className="opacity-70 font-bold">TP1:</span> {scenario.tp1}</div>}
+                    {scenario.tp2 && <div><span className="opacity-70 font-bold">TP2:</span> {scenario.tp2}</div>}
+                  </div>
+                ) : (
+                  scenario || defaultTexts[type]
+                )}
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

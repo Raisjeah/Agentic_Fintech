@@ -44,7 +44,8 @@ class SentimentAgent:
         """
         
         try:
-            llm_res = self.llm.generate(prompt)
+            import asyncio
+            llm_res = await asyncio.to_thread(self.llm.generate, prompt)
             if llm_res.startswith("```json"):
                 llm_res = llm_res[7:-3]
             elif llm_res.startswith("```"):

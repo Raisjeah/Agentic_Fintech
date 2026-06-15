@@ -7,7 +7,7 @@ class SynthesizerAgent:
         # We can use Anthropic or Gemini for synthesis, falling back to Gemini for MVP
         self.llm = get_llm_client(provider=LLMProvider.GEMINI, task="smart")
 
-    def synthesize(self, asset: str, timeframe: str, data_output: Dict[str, Any], tech_output: Dict[str, Any], news_output: Dict[str, Any] = None, sentiment_output: Dict[str, Any] = None, macro_output: Dict[str, Any] = None) -> Dict[str, Any]:
+    async def synthesize(self, asset: str, timeframe: str, data_output: Dict[str, Any], tech_output: Dict[str, Any], news_output: Dict[str, Any] = None, sentiment_output: Dict[str, Any] = None, macro_output: Dict[str, Any] = None) -> Dict[str, Any]:
         """
         Combine outputs to generate the trade plan using LLM.
         """
@@ -40,7 +40,8 @@ class SynthesizerAgent:
         """
         
         try:
-            response_text = self.llm.generate(prompt)
+            import asyncio
+            response_text = await asyncio.to_thread(self.llm.generate, prompt)
             if response_text.startswith("```json"):
                 response_text = response_text[7:-3]
             elif response_text.startswith("```"):

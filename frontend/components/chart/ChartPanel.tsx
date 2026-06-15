@@ -4,10 +4,17 @@ import { useEffect, useRef, useState } from "react";
 import { createChart, ColorType, ISeriesApi, CandlestickData, CandlestickSeries } from "lightweight-charts";
 import { Maximize2, Settings2, BarChart2 } from "lucide-react";
 
-export default function ChartPanel({ asset = "BTC/USDT" }: { asset?: string }) {
+export default function ChartPanel({ 
+  asset = "BTC/USDT", 
+  analysisResult 
+}: { 
+  asset?: string; 
+  analysisResult?: any;
+}) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<any>(null);
   const seriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
+  const priceLinesRef = useRef<any[]>([]);
   const [tf, setTf] = useState("4H");
 
   useEffect(() => {
@@ -57,8 +64,9 @@ export default function ChartPanel({ asset = "BTC/USDT" }: { asset?: string }) {
     let ws: WebSocket;
 
     if (isCrypto) {
-      // 1. Fetch real historical candles
-      fetch(`https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=4h&limit=200`)
+      // 1. Fetch real historical candles using selected timeframe (tf)
+      const intervalStr = tf.toLowerCase();
+      fetch(`https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${intervalStr}&limit=200`)
         .then(res => res.json())
         .then(data => {
           if (Array.isArray(data)) {
@@ -73,7 +81,7 @@ export default function ChartPanel({ asset = "BTC/USDT" }: { asset?: string }) {
           }
 
           // 2. Start WebSocket for live updates after history is loaded
-          ws = new WebSocket(`wss://stream.binance.com:9443/ws/${wsSymbol}@kline_4h`);
+          ws = new WebSocket(`wss://stream.binance.com:9443/ws/${wsSymbol}@kline_${intervalStr}`);
           ws.onmessage = (event) => {
             try {
               const wsData = JSON.parse(event.data);
@@ -93,25 +101,6 @@ export default function ChartPanel({ asset = "BTC/USDT" }: { asset?: string }) {
         .catch(err => console.error("Error fetching historical data", err));
     }
 
-    // Add Overlay Lines (dummy analysis overlay)
-    candlestickSeries.createPriceLine({
-      price: 63000,
-      color: "#FF3B5C",
-      lineWidth: 2,
-      lineStyle: 0,
-      axisLabelVisible: true,
-      title: "SL",
-    });
-    
-    candlestickSeries.createPriceLine({
-      price: 67500,
-      color: "#00D4AA",
-      lineWidth: 2,
-      lineStyle: 3,
-      axisLabelVisible: true,
-      title: "TP1",
-    });
-
     const handleResize = () => {
       chart.applyOptions({ width: chartContainerRef.current?.clientWidth });
     };
@@ -121,8 +110,94 @@ export default function ChartPanel({ asset = "BTC/USDT" }: { asset?: string }) {
       window.removeEventListener("resize", handleResize);
       if (ws) ws.close();
       chart.remove();
+      seriesRef.current = null;
     };
-  }, [asset]);
+  }, [asset, tf]);
+
+  // Handle price line updates separately
+  useEffect(() => {
+    if (!seriesRef.current) return;
+
+    // Clear old lines
+    priceLinesRef.current.forEach(line => {
+      if (seriesRef.current) {
+        try {
+          seriesRef.current.removePriceLine(line);
+        } catch (e) {}
+      }
+    });
+    priceLinesRef.current = [];
+
+    const candlestickSeries = seriesRef.current;
+
+    // Add Overlay Lines
+    if (analysisResult) {
+      const entryZoneLow = analysisResult.entry_plan?.zone_low;
+      const entryZoneHigh = analysisResult.entry_plan?.zone_high;
+      const sl = analysisResult.stop_loss;
+      const tps = analysisResult.take_profit || [];
+
+      if (entryZoneLow && entryZoneHigh) {
+        const entryMid = (entryZoneLow + entryZoneHigh) / 2;
+        const entryLine = candlestickSeries.createPriceLine({
+          price: entryMid,
+          color: "#2563EB",
+          lineWidth: 2,
+          lineStyle: 2, // Dashed
+          axisLabelVisible: true,
+          title: "Entry Zone (Mid)",
+        });
+        priceLinesRef.current.push(entryLine);
+      }
+
+      if (sl) {
+        const slLine = candlestickSeries.createPriceLine({
+          price: sl,
+          color: "#FF3B5C",
+          lineWidth: 2,
+          lineStyle: 0, // Solid
+          axisLabelVisible: true,
+          title: "SL",
+        });
+        priceLinesRef.current.push(slLine);
+      }
+
+      tps.forEach((tp: any) => {
+        if (tp.price) {
+          const tpLine = candlestickSeries.createPriceLine({
+            price: tp.price,
+            color: "#00D4AA",
+            lineWidth: 2,
+            lineStyle: 3, // Dotted
+            axisLabelVisible: true,
+            title: `TP${tp.level || ""}`,
+          });
+          priceLinesRef.current.push(tpLine);
+        }
+      });
+    } else {
+      // Default / fallback lines before analysis runs
+      const basePrice = asset === "ETH/USDT" ? 3400 : 65000;
+      const slLine = candlestickSeries.createPriceLine({
+        price: basePrice * 0.96,
+        color: "#FF3B5C",
+        lineWidth: 2,
+        lineStyle: 0,
+        axisLabelVisible: true,
+        title: "SL",
+      });
+      
+      const tpLine = candlestickSeries.createPriceLine({
+        price: basePrice * 1.04,
+        color: "#00D4AA",
+        lineWidth: 2,
+        lineStyle: 3,
+        axisLabelVisible: true,
+        title: "TP1",
+      });
+      priceLinesRef.current.push(slLine, tpLine);
+    }
+  }, [analysisResult, asset]);
 
   return (
     <div className="flex flex-col flex-1 bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-lg mx-4 mb-4 overflow-hidden min-h-[300px]">

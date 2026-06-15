@@ -6,7 +6,7 @@ class PlannerAgent:
     def __init__(self):
         self.llm = get_llm_client(provider=LLMProvider.GEMINI, task="fast")
         
-    def create_plan(self, asset: str, timeframe: str, goal: str, capital: float, risk_percent: float) -> Dict[str, Any]:
+    async def create_plan(self, asset: str, timeframe: str, goal: str, capital: float, risk_percent: float) -> Dict[str, Any]:
         """
         Decompose trading analysis request into task list JSON.
         """
@@ -29,7 +29,8 @@ class PlannerAgent:
         Do not include markdown blocks, just raw JSON.
         """
         try:
-            llm_res = self.llm.generate(prompt)
+            import asyncio
+            llm_res = await asyncio.to_thread(self.llm.generate, prompt)
             if llm_res.startswith("```json"):
                 llm_res = llm_res[7:-3]
             elif llm_res.startswith("```"):

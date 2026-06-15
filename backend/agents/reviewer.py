@@ -6,7 +6,7 @@ class ReviewerAgent:
     def __init__(self):
         self.llm = get_llm_client(provider=LLMProvider.GEMINI, task="fast")
         
-    def review_plan(self, synth_output: Dict, thesis_data: Dict, risk_data: Dict, mm_data: Dict) -> Dict[str, Any]:
+    async def review_plan(self, synth_output: Dict, thesis_data: Dict, risk_data: Dict, mm_data: Dict) -> Dict[str, Any]:
         """
         Format output into a refined summary/reasoning using LLM.
         """
@@ -24,7 +24,8 @@ class ReviewerAgent:
         Do not include markdown blocks, just raw JSON.
         """
         try:
-            llm_res = self.llm.generate(prompt)
+            import asyncio
+            llm_res = await asyncio.to_thread(self.llm.generate, prompt)
             if llm_res.startswith("```json"):
                 llm_res = llm_res[7:-3]
             elif llm_res.startswith("```"):

@@ -6,7 +6,7 @@ class ThesisAgent:
     def __init__(self):
         self.llm = get_llm_client(provider=LLMProvider.GEMINI, task="smart")
         
-    def generate_thesis(self, asset: str, data_output: Dict, tech_output: Dict, news_output: Dict, sentiment_output: Dict, macro_output: Dict, risk_output: Dict) -> Dict[str, Any]:
+    async def generate_thesis(self, asset: str, data_output: Dict, tech_output: Dict, news_output: Dict, sentiment_output: Dict, macro_output: Dict, risk_output: Dict) -> Dict[str, Any]:
         """
         Build a narrative on why this setup is valid or not.
         """
@@ -29,7 +29,8 @@ class ThesisAgent:
         """
         
         try:
-            llm_res = self.llm.generate(prompt)
+            import asyncio
+            llm_res = await asyncio.to_thread(self.llm.generate, prompt)
             if llm_res.startswith("```json"):
                 llm_res = llm_res[7:-3]
             elif llm_res.startswith("```"):

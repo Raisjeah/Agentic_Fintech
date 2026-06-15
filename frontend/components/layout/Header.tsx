@@ -55,9 +55,9 @@ export default function Header() {
           <Bell className="w-5 h-5" />
           <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-[var(--red-danger)] rounded-full border-2 border-[var(--bg-surface)]" />
         </button>
-        <button className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
+        <Link href="/settings" className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
           <Settings className="w-5 h-5" />
-        </button>
+        </Link>
       </div>
     </header>
   );

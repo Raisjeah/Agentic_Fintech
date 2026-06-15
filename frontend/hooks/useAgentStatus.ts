@@ -6,7 +6,9 @@ export function useAgentStatus(analysisId: string | null) {
   useEffect(() => {
     if (!analysisId) return;
 
-    const ws = new WebSocket("ws://localhost:8000/api/ws/agents");
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+    const wsUrl = backendUrl.replace("http", "ws") + "/ws/agents";
+    const ws = new WebSocket(wsUrl);
 
     ws.onmessage = (event) => {
       try {
