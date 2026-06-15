@@ -1,0 +1,86 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-bg-primary: #070B14;
+  --color-bg-surface: #0D1321;
+  --color-bg-elevated: #111827;
+  --color-bg-input: #0A0F1E;
+
+  --color-border-subtle: #1A2236;
+  --color-border-default: #1E2D45;
+  --color-border-active: #00D4AA;
+
+  --color-cyan-primary: #00D4AA;
+  --color-cyan-dim: #00D4AA20;
+  --color-red-danger: #FF3B5C;
+  --color-red-dim: #FF3B5C20;
+  --color-orange-warn: #FF8C42;
+  --color-orange-dim: #FF8C4220;
+  --color-yellow-caution: #F5C842;
+
+  --color-text-primary: #E8EDF5;
+  --color-text-secondary: #8899B4;
+  --color-text-muted: #4A5568;
+  --color-text-code: #00D4AA;
+
+  --color-status-running: #3B82F6;
+  --color-status-done: #00D4AA;
+  --color-status-error: #FF3B5C;
+  --color-status-idle: #4A5568;
+
+  --font-sans: 'Inter', sans-serif;
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+:root {
+  --bg-primary: #070B14;
+  --bg-surface: #0D1321;
+  --bg-elevated: #111827;
+  --bg-input: #0A0F1E;
+
+  --border-subtle: #1A2236;
+  --border-default: #1E2D45;
+  --border-active: #00D4AA;
+
+  --cyan-primary: #00D4AA;
+  --cyan-dim: #00D4AA20;
+  --red-danger: #FF3B5C;
+  --red-dim: #FF3B5C20;
+  --orange-warn: #FF8C42;
+  --orange-dim: #FF8C4220;
+  --yellow-caution: #F5C842;
+
+  --text-primary: #E8EDF5;
+  --text-secondary: #8899B4;
+  --text-muted: #4A5568;
+  --text-code: #00D4AA;
+
+  --status-running: #3B82F6;
+  --status-done: #00D4AA;
+  --status-error: #FF3B5C;
+  --status-idle: #4A5568;
+}
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+}
+
+/* Base styles for scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-default);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
