@@ -1,14 +1,29 @@
 "use client";
 
-import { useState } from "react";
-import { Settings, Save, Key, Sliders, Database } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Settings, Save, Key, Sliders, Database, CheckCircle, XCircle } from "lucide-react";
 
 export default function SettingsPage() {
-  const [fredKey, setFredKey] = useState("************************");
-  const [geminiKey, setGeminiKey] = useState("************************");
   const [defaultCapital, setDefaultCapital] = useState("10000");
   const [defaultRisk, setDefaultRisk] = useState("1.0");
   const [isSaved, setIsSaved] = useState(false);
+  
+  const [apiStatus, setApiStatus] = useState<{gemini_configured: boolean, fred_configured: boolean} | null>(null);
+
+  useEffect(() => {
+    async function checkStatus() {
+      try {
+        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+        const res = await fetch(`${backendUrl}/api/settings/status`);
+        if (res.ok) {
+          setApiStatus(await res.json());
+        }
+      } catch (err) {
+        console.error("Failed to fetch API status", err);
+      }
+    }
+    checkStatus();
+  }, []);
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,26 +49,38 @@ export default function SettingsPage() {
           <h2 className="text-md font-bold text-[var(--text-primary)] flex items-center border-b border-[var(--border-subtle)] pb-3">
             <Key className="w-4 h-4 mr-2 text-[var(--cyan-primary)]" /> API Integrations
           </h2>
+          
+          <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-md text-amber-400 text-xs font-mono mb-4">
+            API Keys dikonfigurasi melalui file .env di server backend. Perubahan di sini tidak akan tersimpan.
+          </div>
+
           <div className="space-y-4">
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)] mb-2">FRED API Key</label>
-              <input
-                type="password"
-                value={fredKey}
-                onChange={(e) => setFredKey(e.target.value)}
-                className="w-full bg-[var(--bg-input)] border border-[var(--border-default)] rounded-md py-2 px-3 text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--cyan-primary)] font-mono"
-              />
-              <span className="text-[10px] text-[var(--text-muted)] mt-1 block">Digunakan untuk mengambil data FEDFUNDS dan CPIAUCSL riil dari St. Louis Fed.</span>
+            <div className="flex justify-between items-center p-3 bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-md">
+              <div>
+                <p className="text-sm font-bold text-[var(--text-primary)]">FRED API Key</p>
+                <p className="text-[10px] text-[var(--text-muted)] mt-0.5">Digunakan untuk mengambil data FEDFUNDS dan CPIAUCSL riil dari St. Louis Fed.</p>
+              </div>
+              <div>
+                {apiStatus?.fred_configured ? (
+                  <span className="flex items-center text-emerald-400 text-xs font-bold"><CheckCircle className="w-4 h-4 mr-1" /> CONNECTED</span>
+                ) : (
+                  <span className="flex items-center text-rose-400 text-xs font-bold"><XCircle className="w-4 h-4 mr-1" /> MISSING</span>
+                )}
+              </div>
             </div>
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)] mb-2">Gemini API Key</label>
-              <input
-                type="password"
-                value={geminiKey}
-                onChange={(e) => setGeminiKey(e.target.value)}
-                className="w-full bg-[var(--bg-input)] border border-[var(--border-default)] rounded-md py-2 px-3 text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--cyan-primary)] font-mono"
-              />
-              <span className="text-[10px] text-[var(--text-muted)] mt-1 block">Kunci otentikasi utama untuk koordinasi agent LLM.</span>
+
+            <div className="flex justify-between items-center p-3 bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-md">
+              <div>
+                <p className="text-sm font-bold text-[var(--text-primary)]">Gemini API Key</p>
+                <p className="text-[10px] text-[var(--text-muted)] mt-0.5">Kunci otentikasi utama untuk koordinasi agent LLM.</p>
+              </div>
+              <div>
+                {apiStatus?.gemini_configured ? (
+                  <span className="flex items-center text-emerald-400 text-xs font-bold"><CheckCircle className="w-4 h-4 mr-1" /> CONNECTED</span>
+                ) : (
+                  <span className="flex items-center text-rose-400 text-xs font-bold"><XCircle className="w-4 h-4 mr-1" /> MISSING</span>
+                )}
+              </div>
             </div>
           </div>
         </div>

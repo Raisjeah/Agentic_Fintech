@@ -19,3 +19,13 @@ app.include_router(history.router, prefix="/api")
 @app.get("/health")
 def health_check():
     return {"status": "ok"}
+
+@app.get("/api/settings/status")
+def settings_status():
+    import os
+    from dotenv import load_dotenv
+    load_dotenv()
+    return {
+        "gemini_configured": bool(os.getenv("GEMINI_API_KEY")),
+        "fred_configured": bool(os.getenv("FRED_API_KEY"))
+    }

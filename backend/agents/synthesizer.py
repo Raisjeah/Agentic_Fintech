@@ -41,7 +41,7 @@ class SynthesizerAgent:
         
         try:
             import asyncio
-            response_text = await asyncio.to_thread(self.llm.generate, prompt)
+            response_text = await self.llm.generate_async(prompt)
             if response_text.startswith("```json"):
                 response_text = response_text[7:-3]
             elif response_text.startswith("```"):

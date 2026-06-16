@@ -15,7 +15,7 @@ async def get_history():
     items.sort(key=lambda x: x.get("created_at", ""), reverse=True)
     return items
 
-@router.get("/history/performance")
+@router.get("/performance")
 async def get_performance():
     total_trades = 0
     wins = 0

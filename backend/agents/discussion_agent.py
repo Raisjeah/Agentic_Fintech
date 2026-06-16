@@ -46,7 +46,7 @@ async def discuss(analysis_id: str, question: str, analysis: dict) -> str:
     try:
         import asyncio
         prompt_text = f"{context}\n\nRiwayat Percakapan Sebelumnya:\n{history_str}\n\nJawablah sebagai assistant pro. Pertanyaan User: {question}"
-        response = await asyncio.to_thread(client.generate, prompt_text)
+        response = await client.generate_async(prompt_text)
         
         # Save new messages to DB
         try:

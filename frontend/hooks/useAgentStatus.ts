@@ -7,7 +7,7 @@ export function useAgentStatus(analysisId: string | null) {
     if (!analysisId) return;
 
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
-    const wsUrl = backendUrl.replace("http", "ws") + "/ws/agents";
+    const wsUrl = "ws://localhost:8000/ws/agents"; // Direct connection
     const ws = new WebSocket(wsUrl);
 
     ws.onmessage = (event) => {

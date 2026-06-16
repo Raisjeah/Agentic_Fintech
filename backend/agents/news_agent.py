@@ -61,7 +61,7 @@ class NewsAgent:
         
         try:
             import asyncio
-            llm_res = await asyncio.to_thread(self.llm.generate, prompt)
+            llm_res = await self.llm.generate_async(prompt)
             if llm_res.startswith("```json"):
                 llm_res = llm_res[7:-3]
             elif llm_res.startswith("```"):
